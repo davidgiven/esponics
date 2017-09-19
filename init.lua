@@ -1,0 +1,5 @@
+print("START")
+dofile("graphics.lua")
+dofile("relays.lua")
+dofile("wifi.lua")
+dofile("applogic.lua")
