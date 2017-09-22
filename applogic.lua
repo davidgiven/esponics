@@ -1,6 +1,6 @@
 local CYCLE_INTERVAL = 60000
 local FOGGER_ON_TIME = 30000
-local FAN_ON_TIME = 10000
+local FAN_ON_TIME = 2000
 
 local timer = tmr.create()
 local t = tmr:create()
