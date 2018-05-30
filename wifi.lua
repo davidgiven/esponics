@@ -25,7 +25,7 @@ local function wifi_got_ip_event(T)
   -- Note: Having an IP address does not mean there is internet access!
   -- Internet connectivity can be determined with net.dns.resolve().    
   print("Wifi connection is ready! IP address is: "..T.IP)
-  message(1, "IP: "..T.IP)
+  message(1, "IP: "..T.IP..":2323")
   print("Startup will resume momentarily, you have 3 seconds to abort.")
   print("Waiting...") 
   tmr.create():alarm(3000, tmr.ALARM_SINGLE, startup)
