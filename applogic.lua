@@ -1,63 +1,74 @@
 -- All in seconds
 FOGGER_STARTUP = 30
-FOGGER_PERIOD = 3*60
-FOGGER_ON = 5
+FOGGER_PERIOD = 30*60
+FOGGER_ON = 1*60
 
-PUMP_STARTUP = 10
-PUMP_PERIOD = 30*60
-PUMP_ON = 1*60
+PUMP_STARTUP = 60
+PUMP_PERIOD = 24*3600
+PUMP_ON = 60
 
 FAN_STARTUP = 15
-FAN_PERIOD = 60*60
+FAN_PERIOD = 1*3600
 FAN_ON = 3
 
-local fogger_wait = tmr.create()
-local fogger_run = tmr.create()
-message(2, "Fogger startup")
-fogger_on()
-fogger_wait:alarm(FOGGER_STARTUP*1000, tmr.ALARM_AUTO,
-    function()
-        fogger_wait:interval(FOGGER_PERIOD*1000)
-        message(2, "Running fogger")
+TICK = 1
+
+local function supertimer(startup, period, ontime, off_cb, on_cb)
+    local wait_tmr = tmr.create()
+    local seconds = startup
+    local onoff = true
+
+    wait_tmr:alarm(TICK*1000, tmr.ALARM_AUTO,
+        function()
+            seconds = seconds - TICK
+            local cb = onoff and on_cb or off_cb
+            cb(seconds)
+            if (seconds == 0) then
+                if onoff then
+                    onoff = false
+                    seconds = period - ontime
+                else
+                    onoff = true
+                    seconds = ontime
+                end
+            end
+        end)
+end
+
+local function rendertime(s)
+    local min = math.floor(s / 60)
+    local hour = math.floor(min / 60)
+    min = min % 60
+    local sec = s % 60
+    return hour.."h"..min.."m"..sec.."s"
+end
+
+supertimer(FOGGER_STARTUP, FOGGER_PERIOD, FOGGER_ON,
+    function(s)
+        message(2, "Fogger off: "..rendertime(s))
+        fogger_off()
+    end,
+    function(s)
+        message(2, "Fogger on:  "..rendertime(s))
         fogger_on()
+    end)    
 
-        fogger_run:alarm(FOGGER_ON*1000, tmr.ALARM_SINGLE,
-            function()
-                message(2, "Fogger off")
-                fogger_off()
-            end)
-    end)
-
-local pump_wait = tmr.create()
-local pump_run = tmr.create()
-pump_on()
-message(3, "Pump startup")
-pump_wait:alarm(PUMP_STARTUP*1000, tmr.ALARM_AUTO,
-    function()
-        pump_wait:interval(PUMP_PERIOD*1000)
-        message(3, "Running pump")
+supertimer(PUMP_STARTUP, PUMP_PERIOD, PUMP_ON,
+    function(s)
+        message(3, "Pump off:   "..rendertime(s))
+        pump_off()
+    end,
+    function(s)
+        message(3, "Pump on:    "..rendertime(s))
         pump_on()
+    end)    
 
-        pump_run:alarm(PUMP_ON*1000, tmr.ALARM_SINGLE,
-            function()
-                message(3, "Pump off")
-                pump_off()
-            end)
-    end)
-
-local fan_wait = tmr.create()
-local fan_run = tmr.create()
-message(4, "Fan startup")
-fan_on()
-fan_wait:alarm(FAN_STARTUP*1000, tmr.ALARM_AUTO,
-    function()
-        fan_wait:interval(FAN_PERIOD*1000)
-        message(4, "Running fan")
+supertimer(FAN_STARTUP, FAN_PERIOD, FAN_ON,
+    function(s)
+        message(4, "Fan off:    "..rendertime(s))
+        fan_off()
+    end,
+    function(s)
+        message(4, "Fan on:     "..rendertime(s))
         fan_on()
-
-        fan_run:alarm(FAN_ON*1000, tmr.ALARM_SINGLE,
-            function()
-                message(4, "Fan off")
-                fan_off()
-            end)
-    end)
+    end)    
