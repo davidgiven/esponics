@@ -5,13 +5,13 @@ FOGGER_ON = 1*60
 
 PUMP_STARTUP = 60
 PUMP_PERIOD = 24*3600
-PUMP_ON = 60
+PUMP_ON = 5*60
 
 FAN_STARTUP = 15
 FAN_PERIOD = 1*3600
 FAN_ON = 3
 
-TICK = 1
+TICK = 2
 
 local function supertimer(startup, period, ontime, off_cb, on_cb)
     local wait_tmr = tmr.create()
@@ -23,13 +23,13 @@ local function supertimer(startup, period, ontime, off_cb, on_cb)
             seconds = seconds - TICK
             local cb = onoff and on_cb or off_cb
             cb(seconds)
-            if (seconds == 0) then
+            if (seconds <= 0) then
                 if onoff then
                     onoff = false
-                    seconds = period - ontime
+                    seconds = seconds + (period - ontime)
                 else
                     onoff = true
-                    seconds = ontime
+                    seconds = seconds + ontime
                 end
             end
         end)
